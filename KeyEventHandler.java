@@ -12,68 +12,30 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-class JapaneseKeyboard
+public class KeyEventHandler
 {
-	//Potential alternative Designs:
-	//	--> polling and chunking strings from english to japanese [this seems more robust to human error]
-	//		Example	--> "awa" -> "a" "wa"
 
-	//Collisions: 
-	// 			  How to deal with invalid input I.E non alphabetical key input
-
-
-
-	static String buffer = ""; //used in printText
-	static String japanese = ""; //used for label to display japanese
-	static JTextField textField = new JTextField(); //input
-
+	static String buffer = "";
+	static String japanese = "";
 	public static void printText(JLabel label, char c)
 	{
-
-		//Handle Backspacing
-		if (c == KeyEvent.VK_BACK_SPACE) 
-		{
-				if (buffer.length() == 0)
-				{
-					//remove last japanese character
-					String lastChar = Character.toString(japanese.charAt(japanese.length() - 1));
-					String temp = "";
-					for(int i = 0; i < japanese.length() - 1; i++)
-						temp += japanese.charAt(i);
-					japanese = temp;
-					//search keys for value of last japanese character
-					String key = JapaneseKeyCodes.getKey(lastChar);
-					//remove last character of key and add that to buffer
-					temp = "";
-					for (int j = 0; j < key.length() - 1; j++)
-						temp +=key.charAt(j);
-					buffer = temp;
-				}
-				else
-				{
-					char[] cBuffer = buffer.toCharArray();
-					buffer = "";
-					for (int i = 0; i < cBuffer.length - 1; i++) 
-						buffer += cBuffer[i];			
-				}
-		}
-		else 
-		{
-			buffer += Character.toString(c);
-		}
-
+		buffer += Character.toString(c);
+		
 		//copies text to clipboard when enter key is pressed and resets japanese string
 		if(c == KeyEvent.VK_ENTER)
 		{
-			StringSelection stringSelection = new StringSelection(japanese);
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			clipboard.setContents(stringSelection, null);
-			textField.setText("");
-			japanese = "";
-			buffer = "";
+		StringSelection stringSelection = new StringSelection(japanese);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(stringSelection, null);
+		japanese = "";
+		buffer = "";
 		}
-		
 
+		//TODO: handle backspace
+		if(c == KeyEvent.VK_BACK_SPACE)
+		{
+			System.out.println("BACKSPACE DETECTED");
+		}
 
 		if(JapaneseKeyCodes.toJapanese.get(buffer) != null)
 		{
@@ -109,12 +71,27 @@ class JapaneseKeyboard
 			@Override
 			public void keyPressed(KeyEvent event)
 			{
+				printEventInfo(" Key Pressed ", event);
 			}
 
 			@Override
 			public void keyReleased(KeyEvent event)
 			{
+				printEventInfo(" Key Released ", event);				
+
 			}
+
+			//TODO: add to a string buffer the key that has been typed -- this will be used later
+
+			//LOGIC: If the next character is a vowel and the current character in the buffer is a consonant -- conver to consonant and vowel hiragana vers.
+			//		 If the next character and the current character in the buffer are vowels -- covert both to vowel hiragana
+			//		 remove characters that have been converted
+			// 		 if no next character -- convert individual
+			//COLLISIONS: "n" hiragana 
+			//Solutions: Polling and creating a time variable and "feeling" how quickly it should convert
+			//GOALS:
+			//	Current -> Create a conversion system to hiragana;
+			//		Data Structures involved -- Dictionary/Hashmap
 
 			@Override
 			public void keyTyped(KeyEvent event)
@@ -126,7 +103,20 @@ class JapaneseKeyboard
 			private void printEventInfo(String str, KeyEvent e)
 			{
 				System.out.println(str);
-				System.out.println("   Char: " + e.getKeyChar());
+
+				int keyCode = e.getKeyCode();
+
+			    System.out.println("   Code: " + KeyEvent.getKeyText(keyCode));
+ 
+			    System.out.println("   Char: " + e.getKeyChar());
+ 
+			    int mods = e.getModifiersEx();
+ 
+			    System.out.println("    Mods: " + KeyEvent.getModifiersExText(mods));
+ 
+				System.out.println("    Location: " + keyboardLocation(e.getKeyLocation()));
+ 
+			    System.out.println("    Action? " + e.isActionKey());
  
 			}
 
@@ -156,9 +146,10 @@ class JapaneseKeyboard
 			}
 		};
 
+		JTextField textField = new JTextField();
 
 		textField.addKeyListener(listener);
-		contentPane.add(textField, BorderLayout.NORTH); //adds textfield to northmost position of contentpane
+		contentPane.add(textField, BorderLayout.NORTH);
 		frame.setVisible(true);
 
 	}

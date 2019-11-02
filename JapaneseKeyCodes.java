@@ -94,7 +94,7 @@ public class JapaneseKeyCodes
 		toJapanese.put("wo", "\u3092");
 
 		//"n"
-		toJapanese.put("n" , "\u3093");
+		toJapanese.put("nn" , "\u3093");
 
 		//"g"
 		toJapanese.put("ga" , "\u304C");
